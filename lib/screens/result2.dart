@@ -2,16 +2,15 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:pep_growth/models/frequentItemset.dart';
 import 'package:pep_growth/shared/loading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Result extends StatefulWidget {
+class Result2 extends StatefulWidget {
   @override
-  _ResultState createState() => _ResultState();
+  _Result2State createState() => _Result2State();
 }
 
-class _ResultState extends State<Result> {
+class _Result2State extends State<Result2> {
   bool loading = true;
   List<FrequentItemset> frequentItemsets = [];
   late DateTime startTime;
@@ -31,21 +30,46 @@ class _ResultState extends State<Result> {
     int _value = int.tryParse(valueString) ?? 1;
     double _support = double.tryParse(supportString) ?? 0.5;
 
-    final response = await http
-        .get(Uri.parse('http://10.0.2.2:8000?value=$_value&support=$_support'));
-    if (response.statusCode == 200) {
-      final List<dynamic> jsonList =
-          json.decode(response.body)['frequent_itemsets'];
-      endTime = DateTime.now();
+    try {
+      final response = await http.get(Uri.parse(
+          'http://10.0.2.2:8000/apriori?value=$_value&support=$_support'));
 
+      if (response.statusCode == 200) {
+        final List<dynamic> frequentItemsetsJson =
+            json.decode(response.body)['frequent_itemsets'];
+
+        endTime = DateTime.now();
+
+        setState(() {
+          frequentItemsets = frequentItemsetsJson
+              .map((json) => FrequentItemset.fromJson(json))
+              .toList();
+          loading = false;
+        });
+      } else {
+        throw Exception('Failed to load data');
+      }
+    } catch (e) {
       setState(() {
-        frequentItemsets = jsonList
-            .map((json) => FrequentItemset.fromJson(jsonDecode(json)))
-            .toList();
         loading = false;
       });
-    } else {
-      throw Exception('Failed to load data');
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Error'),
+            content: Text('Failed to fetch data: $e'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 
@@ -55,7 +79,7 @@ class _ResultState extends State<Result> {
         ? Loading()
         : Scaffold(
             appBar: AppBar(
-              title: Text('תבניות שכיחות'),
+              title: Text('חוקי ההקשר'),
               actions: <Widget>[
                 IconButton(
                   icon: Icon(Icons.arrow_forward),
@@ -94,23 +118,31 @@ class _ResultState extends State<Result> {
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
+                          DataColumn(
+                            label: Text(
+                              "תמיכה",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
                         ],
                         rows: frequentItemsets
-                            .map(
-                              (itemset) => DataRow(
-                                cells: [
-                                  DataCell(Text(itemset.items.toString())),
-                                  DataCell(Text(itemset.freq.toString())),
-                                ],
-                              ),
-                            )
+                            .map((itemset) => DataRow(
+                                  cells: [
+                                    DataCell(Text(itemset.items.join(', '))),
+                                    DataCell(Text(itemset.freq.toString())),
+                                    DataCell(Text(
+                                        itemset.support.toStringAsFixed(2))),
+                                  ],
+                                ))
                             .toList(),
                       ),
                       SizedBox(height: 20),
                       Text(
                         'זמן ביצוע: ${(endTime.difference(startTime).inMilliseconds / 1000).toStringAsFixed(2)} שניות',
                         style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -118,5 +150,25 @@ class _ResultState extends State<Result> {
               ],
             ),
           );
+  }
+}
+
+class FrequentItemset {
+  final List<String> items;
+  final double freq;
+  final double support;
+
+  FrequentItemset({
+    required this.items,
+    required this.freq,
+    required this.support,
+  });
+
+  factory FrequentItemset.fromJson(Map<String, dynamic> json) {
+    return FrequentItemset(
+      items: List<String>.from(json['itemsets'].map((item) => item as String)),
+      freq: json['freq'].toDouble(),
+      support: json['support'].toDouble(),
+    );
   }
 }

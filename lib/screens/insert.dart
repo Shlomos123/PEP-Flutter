@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:pep_growth/models/file.dart';
 import 'package:pep_growth/shared/constants.dart';
 import 'package:pep_growth/shared/loading.dart';
@@ -10,68 +11,60 @@ class Insert extends StatefulWidget {
 }
 
 class _InsertState extends State<Insert> {
-  //final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
   bool loading = false;
-  // text field state
-
   String error = "";
-
   String errorFile = "";
-
   List<File> files = [
     File(name: "בחר קובץ נתונים", value: "0"),
     File(name: "fruits.json", value: "1"),
     File(name: "vegetables.json", value: "2"),
   ];
   String currentFile = "0";
+  String support = "0.5";
 
   @override
   void dispose() {
-    // TODO: Dispose a RewardedAd object
-
     super.dispose();
   }
 
   @override
   void initState() {
-    setState(() {});
-    //_loadSettings();
-
     super.initState();
   }
-
-  //Loading counter value on start
-  // _loadSettings() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   setState(() {
-  //     currentLanguage = (prefs.getString('language') ?? "1");
-  //     // myEmailController.text = email;
-  //     // password = (prefs.getString('password') ?? "");
-  //     // myPasswordController.text = password;
-  //     // if (email != "" && password != "")
-  //     //     _rememberMe = true;
-  //   });
-  // }
 
   confirm() async {
     if (_formKey.currentState!.validate() && (currentFile != "0")) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-
       await prefs.setString('value', currentFile);
+      await prefs.setString('support', support);
       Navigator.of(context).pop();
       Navigator.of(context).pushNamed('/result');
-      // Navigator.push(
-      //   context,
-      //   MaterialPageRoute(
-      //     builder: (context) => Result(),
-      //     // Pass the arguments as part of the RouteSettings. The
-      //     // DetailScreen reads the arguments from these settings.
-      //     settings: RouteSettings(
-      //       arguments: currentFile,
-      //     ),
-      //   ),
-      // );
+    } else {
+      if (currentFile == "0") {
+        setState(() {
+          errorFile = "שום קובץ נתונים לא נבחר";
+        });
+      } else {
+        setState(() {
+          errorFile = "";
+        });
+      }
+
+      setState(() {
+        error = "שום קובץ נתונים לא נבחר";
+        loading = false;
+      });
+    }
+  }
+
+  confirm2() async {
+    if (_formKey.currentState!.validate() && (currentFile != "0")) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('value', currentFile);
+      await prefs.setString('support', support);
+      Navigator.of(context).pop();
+      Navigator.of(context).pushNamed('/result2');
     } else {
       if (currentFile == "0") {
         setState(() {
@@ -100,7 +93,7 @@ class _InsertState extends State<Insert> {
             appBar: AppBar(
               backgroundColor: Colors.blue[400],
               elevation: 0.0,
-              title: Text("הכנס פרטים"),
+              title: Text("הכנס נתונים"),
             ),
             body: Stack(
               children: [
@@ -120,18 +113,6 @@ class _InsertState extends State<Insert> {
                       key: _formKey,
                       child: Column(
                         children: <Widget>[
-                          // DropdownButton<String>(
-                          //   items: genders.map((String g) {
-                          //     return DropdownMenuItem<String>(
-                          //       value: g,
-                          //       child: Text(g),
-                          //     );
-                          //   }).toList(),
-                          //   onChanged: (val) {
-
-                          //   },
-                          // ),
-
                           SizedBox(
                             height: 10.0,
                           ),
@@ -143,7 +124,7 @@ class _InsertState extends State<Insert> {
                                 child: Icon(
                                   Icons.line_weight,
                                   color: Colors.grey,
-                                ), // icon is 48px widget.
+                                ),
                               ),
                             ),
                             value: currentFile,
@@ -166,6 +147,41 @@ class _InsertState extends State<Insert> {
                             style: TextStyle(color: Colors.red, fontSize: 12.0),
                           ),
                           SizedBox(height: 20.0),
+                          TextFormField(
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\d*\.?\d*')),
+                              DecimalRangeTextInputFormatter(
+                                  min: 0.0, max: 1.0),
+                            ],
+                            decoration: textInputDecoration.copyWith(
+                              hintText: "הכנס minSupport",
+                              prefixIcon: Padding(
+                                padding: EdgeInsets.all(0.0),
+                                child: Icon(
+                                  Icons.line_weight,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                            keyboardType:
+                                TextInputType.numberWithOptions(decimal: true),
+                            validator: (val) {
+                              if (val == null || val.isEmpty) {
+                                return "לא הוכנס ערך";
+                              } else {
+                                double? value = double.tryParse(val);
+                                if (value == null || value < 0 || value > 1) {
+                                  return "הכנס ערך בין 0 ל-1";
+                                }
+                              }
+                              return null;
+                            },
+                            onChanged: (val) {
+                              setState(() => support = val);
+                            },
+                          ),
+                          SizedBox(height: 20.0),
                           Container(
                             padding: EdgeInsets.symmetric(vertical: 25.0),
                             width: double.infinity,
@@ -182,7 +198,7 @@ class _InsertState extends State<Insert> {
                                 confirm();
                               },
                               child: Text(
-                                "אישור",
+                                "הרץ PFP-Growth",
                                 style: TextStyle(
                                   color: Color(0xFF527DAA),
                                   letterSpacing: 1.5,
@@ -193,27 +209,34 @@ class _InsertState extends State<Insert> {
                               ),
                             ),
                           ),
-
-                          // RaisedButton(
-                          //   color: Colors.pink[400],
-                          //   child: Text(
-                          //     'Register',
-                          //     style: TextStyle(color: Colors.white)
-                          //   ),
-                          //   onPressed: () async {
-                          //     if (_formKey.currentState.validate()) {//if true valid form
-                          //       setState(() => loading = true );
-                          //       dynamic result = await _auth.registerWithEmailAndPassword(email, password);
-                          //       if (result == null) {
-                          //           setState(() {
-                          //             error = 'please supply a valid email';
-                          //             loading = false;
-                          //           });
-                          //       }
-                          //     }
-                          //   }
-                          // ),
-
+                          SizedBox(height: 0.0),
+                          Container(
+                            padding: EdgeInsets.symmetric(vertical: 5.0),
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                elevation: 5.0,
+                                padding: EdgeInsets.all(15.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30.0),
+                                ),
+                                backgroundColor: Colors.white,
+                              ),
+                              onPressed: () {
+                                confirm2();
+                              },
+                              child: Text(
+                                "הרץ Apriori",
+                                style: TextStyle(
+                                  color: Color(0xFF527DAA),
+                                  letterSpacing: 1.5,
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'OpenSans',
+                                ),
+                              ),
+                            ),
+                          ),
                           Text(
                             error,
                             style: TextStyle(color: Colors.red, fontSize: 14.0),
@@ -229,5 +252,27 @@ class _InsertState extends State<Insert> {
               ],
             ),
           );
+  }
+}
+
+class DecimalRangeTextInputFormatter extends TextInputFormatter {
+  final double min;
+  final double max;
+
+  DecimalRangeTextInputFormatter({required this.min, required this.max});
+
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    final double? value = double.tryParse(newValue.text);
+    if (value == null || value < min || value > max) {
+      return oldValue;
+    }
+
+    return newValue;
   }
 }
