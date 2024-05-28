@@ -39,7 +39,8 @@ class _InsertState extends State<Insert> {
       await prefs.setString('value', currentFile);
       await prefs.setString('support', support);
       Navigator.of(context).pop();
-      Navigator.of(context).pushNamed('/result');
+      Navigator.of(context).pushNamed('/resultMlxtend');
+      //Navigator.of(context).pushNamed('/result');
     } else {
       if (currentFile == "0") {
         setState(() {

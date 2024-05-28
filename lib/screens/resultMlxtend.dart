@@ -5,16 +5,16 @@ import 'package:http/http.dart' as http;
 import 'package:pep_growth/shared/loading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Result2 extends StatefulWidget {
+class ResultMlxtend extends StatefulWidget {
   @override
-  _Result2State createState() => _Result2State();
+  _ResultMlxtendState createState() => _ResultMlxtendState();
 }
 
-class _Result2State extends State<Result2> {
+class _ResultMlxtendState extends State<ResultMlxtend> {
   bool loading = true;
   List<FrequentItemset> frequentItemsets = [];
   late DateTime startTime;
-  late DateTime endTime;
+  late DateTime endTime; // Declare the variable as late here
 
   @override
   void initState() {
@@ -33,7 +33,7 @@ class _Result2State extends State<Result2> {
 
     try {
       final response = await http.get(Uri.parse(
-          'https://pep-fastapi.onrender.com/apriori?value=$_value&support=$_support'));
+          'https://pep-fastapi.onrender.com/?value=$_value&support=$_support'));
 
       if (response.statusCode == 200) {
         final List<dynamic> frequentItemsetsJson =
