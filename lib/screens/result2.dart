@@ -80,7 +80,7 @@ class _Result2State extends State<Result2> {
         ? Loading()
         : Scaffold(
             appBar: AppBar(
-              title: Text('חוקי ההקשר'),
+              title: Text('תבניות שכיחות'),
               actions: <Widget>[
                 IconButton(
                   icon: Icon(Icons.arrow_forward),

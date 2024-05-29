@@ -28,12 +28,17 @@ class _ResultMlxtendState extends State<ResultMlxtend> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String valueString = prefs.getString('value') ?? "1";
     String supportString = prefs.getString('support') ?? "0.5";
+    String njobsString = prefs.getString('n_jobs') ?? "-1";
     int _value = int.tryParse(valueString) ?? 1;
     double _support = double.tryParse(supportString) ?? 0.5;
+    int _njobs = int.tryParse(njobsString) ?? -1;
 
     try {
       final response = await http.get(Uri.parse(
-          'https://pep-fastapi.onrender.com/?value=$_value&support=$_support'));
+          'https://pep-fastapi.onrender.com/?value=$_value&support=$_support&n_jobs=$_njobs'));
+
+      // final response = await http
+      //   .get(Uri.parse('http://10.0.2.2:8000?value=$_value&support=$_support'));
 
       if (response.statusCode == 200) {
         final List<dynamic> frequentItemsetsJson =
@@ -80,7 +85,7 @@ class _ResultMlxtendState extends State<ResultMlxtend> {
         ? Loading()
         : Scaffold(
             appBar: AppBar(
-              title: Text('חוקי ההקשר'),
+              title: Text('תבניות שכיחות'),
               actions: <Widget>[
                 IconButton(
                   icon: Icon(Icons.arrow_forward),
