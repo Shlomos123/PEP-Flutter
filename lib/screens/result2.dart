@@ -35,6 +35,9 @@ class _Result2State extends State<Result2> {
       final response = await http.get(Uri.parse(
           'https://pep-fastapi.onrender.com/apriori?value=$_value&support=$_support'));
 
+      // final response = await http
+      //   .get(Uri.parse('http://10.0.2.2:8000?value=$_value&support=$_support'));
+
       if (response.statusCode == 200) {
         final List<dynamic> frequentItemsetsJson =
             json.decode(response.body)['frequent_itemsets'];

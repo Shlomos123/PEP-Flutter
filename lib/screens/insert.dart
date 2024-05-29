@@ -71,18 +71,16 @@ class _InsertState extends State<Insert> {
       }
       if (chosenAlgo == "0") {
         setState(() {
-          errorFile = "שום אלגוריתם לא נבחר";
+          errorAlgo = "שום אלגוריתם לא נבחר";
         });
       } else {
         setState(() {
-          errorFile = "";
+          errorAlgo = "";
         });
       }
 
       setState(() {
-        error = chosenAlgo == "0"
-            ? "שום אלגוריתם לא נבחר"
-            : "שום קובץ נתונים לא נבחר";
+        error = "תקן את השגיאות המודגשות";
         loading = false;
       });
     }
@@ -169,12 +167,15 @@ class _InsertState extends State<Insert> {
                             onChanged: (val) =>
                                 setState(() => chosenAlgo = val!),
                           ),
+                          SizedBox(
+                            height: 2.0,
+                          ),
                           Text(
                             errorAlgo,
                             style: TextStyle(color: Colors.red, fontSize: 12.0),
                           ),
                           SizedBox(
-                            height: 10.0,
+                            height: 20.0,
                           ),
                           DropdownButtonFormField(
                             decoration: textInputDecoration.copyWith(
